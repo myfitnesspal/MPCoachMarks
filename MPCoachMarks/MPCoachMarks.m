@@ -227,6 +227,8 @@ NSString *const kContinueLabelText = @"Tap to continue";
   // Coach mark definition
   NSDictionary *markDef = [self.coachMarks objectAtIndex:index];
   NSString *markCaption = [markDef objectForKey:@"caption"];
+  NSAttributedString *markAttributedCaption = [markDef objectForKey:@"attributedCaption"];
+  
   CGRect markRect = [[markDef objectForKey:@"rect"] CGRectValue];
   
   MaskShape shape = DEFAULT;
@@ -275,11 +277,18 @@ NSString *const kContinueLabelText = @"Tap to continue";
   if( [markDef objectForKey:@"showArrow"])
     showArrow = [[markDef objectForKey:@"showArrow"] boolValue];
   
+  if (markCaption) {
+    self.lblCaption.text = markCaption;
+  }
+  
+  if (markAttributedCaption) {
+    self.lblCaption.attributedText = markAttributedCaption;
+  }
   
   // Calculate the caption position and size
   self.lblCaption.alpha = 0.0f;
   self.lblCaption.frame = (CGRect){{0.0f, 0.0f}, {self.maxLblWidth, 0.0f}};
-  self.lblCaption.text = markCaption;
+  
   [self.lblCaption sizeToFit];
   CGFloat y;
   CGFloat x;
