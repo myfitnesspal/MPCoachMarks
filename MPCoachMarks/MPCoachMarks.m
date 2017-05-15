@@ -277,6 +277,9 @@ NSString *const kContinueLabelText = @"Tap to continue";
   if( [markDef objectForKey:@"showArrow"])
     showArrow = [[markDef objectForKey:@"showArrow"] boolValue];
   
+  NSTextAlignment textAlignment = [[markDef objectForKey:@"textAlignment"] integerValue];
+  self.lblCaption.textAlignment = textAlignment;
+  
   if (markCaption) {
     self.lblCaption.text = markCaption;
   }
