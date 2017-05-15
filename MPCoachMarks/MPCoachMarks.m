@@ -270,8 +270,6 @@ NSString *const kContinueLabelText = @"Tap to continue";
     [self addSubview:currentView];
   }
   
-  
-  
   [self.arrowImage removeFromSuperview];
   BOOL showArrow = NO;
   if( [markDef objectForKey:@"showArrow"])
