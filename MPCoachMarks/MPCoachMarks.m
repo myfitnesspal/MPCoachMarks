@@ -342,6 +342,14 @@ NSString *const kContinueLabelText = @"Tap to continue";
         x -= (self.arrowImage.frame.size.width + labelMargin);
         [self addSubview:self.arrowImage];
       }
+      // if the mark goes off-screen, bring it back on and reduce its width
+      if (x < 0) {
+        CGRect currentFrame = self.lblCaption.frame;
+        CGFloat newWidth = currentFrame.size.width - (abs(x) + labelMargin);
+        x = labelMargin;
+        self.lblCaption.frame = CGRectMake(x, currentFrame.origin.y, newWidth, currentFrame.size.height);
+        [self.lblCaption sizeToFit];
+      }
     }
       break;
     case LABEL_POSITION_RIGHT:
