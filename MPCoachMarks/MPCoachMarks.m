@@ -227,6 +227,8 @@ NSString *const kContinueLabelText = @"Tap to continue";
   // Coach mark definition
   NSDictionary *markDef = [self.coachMarks objectAtIndex:index];
   NSString *markCaption = [markDef objectForKey:@"caption"];
+  NSAttributedString *markAttributedCaption = [markDef objectForKey:@"attributedCaption"];
+  
   CGRect markRect = [[markDef objectForKey:@"rect"] CGRectValue];
   
   MaskShape shape = DEFAULT;
@@ -268,18 +270,32 @@ NSString *const kContinueLabelText = @"Tap to continue";
     [self addSubview:currentView];
   }
   
-  
-  
   [self.arrowImage removeFromSuperview];
   BOOL showArrow = NO;
   if( [markDef objectForKey:@"showArrow"])
     showArrow = [[markDef objectForKey:@"showArrow"] boolValue];
   
+  NSTextAlignment textAlignment = [[markDef objectForKey:@"textAlignment"] integerValue];
+  self.lblCaption.textAlignment = textAlignment;
+  
+  CGFloat labelMargin = kLabelMargin;
+  NSNumber *customMargin = [markDef objectForKey:@"labelMargin"];
+  if (customMargin) {
+    labelMargin = [customMargin doubleValue];
+  }
+  
+  if (markCaption) {
+    self.lblCaption.text = markCaption;
+  }
+  
+  if (markAttributedCaption) {
+    self.lblCaption.attributedText = markAttributedCaption;
+  }
   
   // Calculate the caption position and size
   self.lblCaption.alpha = 0.0f;
   self.lblCaption.frame = (CGRect){{0.0f, 0.0f}, {self.maxLblWidth, 0.0f}};
-  self.lblCaption.text = markCaption;
+  
   [self.lblCaption sizeToFit];
   CGFloat y;
   CGFloat x;
@@ -288,10 +304,10 @@ NSString *const kContinueLabelText = @"Tap to continue";
   //Label Aligment and Position
   switch (labelAlignment) {
     case LABEL_ALIGNMENT_RIGHT:
-      x = floorf(self.bounds.size.width - self.lblCaption.frame.size.width - kLabelMargin);
+      x = floorf(self.bounds.size.width - self.lblCaption.frame.size.width - labelMargin);
       break;
     case LABEL_ALIGNMENT_LEFT:
-      x = kLabelMargin;
+      x = labelMargin;
       break;
     default:
       x = floorf((self.bounds.size.width - self.lblCaption.frame.size.width) / 2.0f);
@@ -301,14 +317,14 @@ NSString *const kContinueLabelText = @"Tap to continue";
   switch (labelPosition) {
     case LABEL_POSITION_TOP:
     {
-      y = markRect.origin.y - self.lblCaption.frame.size.height - kLabelMargin;
+      y = markRect.origin.y - self.lblCaption.frame.size.height - labelMargin;
       if(showArrow) {
         self.arrowImage = [[UIImageView alloc] initWithImage:[self fetchImage:@"arrow-down"]];
         CGRect imageViewFrame = self.arrowImage.frame;
         imageViewFrame.origin.x = x;
         imageViewFrame.origin.y = y;
         self.arrowImage.frame = imageViewFrame;
-        y -= (self.arrowImage.frame.size.height + kLabelMargin);
+        y -= (self.arrowImage.frame.size.height + labelMargin);
         [self addSubview:self.arrowImage];
       }
     }
@@ -316,22 +332,30 @@ NSString *const kContinueLabelText = @"Tap to continue";
     case LABEL_POSITION_LEFT:
     {
       y = markRect.origin.y + markRect.size.height/2 - self.lblCaption.frame.size.height/2;
-      x = self.bounds.size.width - self.lblCaption.frame.size.width - kLabelMargin - markRect.size.width;
+      x = self.bounds.size.width - self.lblCaption.frame.size.width - labelMargin - markRect.size.width;
       if(showArrow) {
         self.arrowImage = [[UIImageView alloc] initWithImage:[self fetchImage:@"arrow-right"]];
         CGRect imageViewFrame = self.arrowImage.frame;
-        imageViewFrame.origin.x = self.bounds.size.width - self.arrowImage.frame.size.width - kLabelMargin - markRect.size.width;
+        imageViewFrame.origin.x = self.bounds.size.width - self.arrowImage.frame.size.width - labelMargin - markRect.size.width;
         imageViewFrame.origin.y = y + self.lblCaption.frame.size.height/2 - imageViewFrame.size.height/2;
         self.arrowImage.frame = imageViewFrame;
-        x -= (self.arrowImage.frame.size.width + kLabelMargin);
+        x -= (self.arrowImage.frame.size.width + labelMargin);
         [self addSubview:self.arrowImage];
+      }
+      // if the mark goes off-screen, bring it back on and reduce its width
+      if (x < 0) {
+        CGRect currentFrame = self.lblCaption.frame;
+        CGFloat newWidth = currentFrame.size.width - (abs(x) + labelMargin);
+        x = labelMargin;
+        self.lblCaption.frame = CGRectMake(x, currentFrame.origin.y, newWidth, currentFrame.size.height);
+        [self.lblCaption sizeToFit];
       }
     }
       break;
     case LABEL_POSITION_RIGHT:
     {
       y = markRect.origin.y + markRect.size.height/2 - self.lblCaption.frame.size.height/2;
-      x = markRect.origin.x + markRect.size.width + kLabelMargin;
+      x = markRect.origin.x + markRect.size.width + labelMargin;
       if(showArrow) {
         
       }
@@ -344,12 +368,12 @@ NSString *const kContinueLabelText = @"Tap to continue";
       if (bottomY > self.bounds.size.height) {
         y = markRect.origin.y - self.lblSpacing - self.lblCaption.frame.size.height;
       }
-      x = markRect.origin.x + markRect.size.width + kLabelMargin;
+      x = markRect.origin.x + markRect.size.width + labelMargin;
       if(showArrow) {
         self.arrowImage = [[UIImageView alloc] initWithImage:[self fetchImage:@"arrow-top"]];
         CGRect imageViewFrame = self.arrowImage.frame;
         imageViewFrame.origin.x = x - markRect.size.width/2 - imageViewFrame.size.width/2;
-        imageViewFrame.origin.y = y - kLabelMargin; //self.lblCaption.frame.size.height/2
+        imageViewFrame.origin.y = y - labelMargin; //self.lblCaption.frame.size.height/2
         y += imageViewFrame.size.height/2;
         self.arrowImage.frame = imageViewFrame;
         [self addSubview:self.arrowImage];
@@ -368,7 +392,7 @@ NSString *const kContinueLabelText = @"Tap to continue";
         imageViewFrame.origin.x = x;
         imageViewFrame.origin.y = y;
         self.arrowImage.frame = imageViewFrame;
-        y += (self.arrowImage.frame.size.height + kLabelMargin);
+        y += (self.arrowImage.frame.size.height + labelMargin);
         [self addSubview:self.arrowImage];
       }
     }
